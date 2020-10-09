@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zei.flow.dao.FlowAuditMapper">
+
+    <resultMap id="FlowDataListVO" type="com.zei.flow.api.vo.FlowDataListVO"></resultMap>
+
+    <select id="queryMySubmitProcess" resultMap="FlowDataListVO"
+            parameterType="com.zei.flow.api.search.FlowDataSearch">
+        SELECT
+        a.instance_id,
+        a.flow_key,
+        a.flow_code,
+        a.service_id,
+        a.create_user,
+        a.flow_state,
+        a.create_time as createTime,
+        a.remark,
+        b.current_task_key,
+        b.current_task_name,
+        b.next_role,
+        b.next_task_key,
+        b.next_task_name,
+        b.audit_user_id,
+        b.audit_time
+        FROM
+        flow_audit a
+        LEFT JOIN
+        (
+        #子查询出最新的一条数据
+        SELECT * FROM
+        (
+        SELECT
+        c.instance_id,
+        c.current_task_key,
+        c.current_task_name,
+        c.current_role,
+        c.next_role,
+        c.next_task_key,
+        c.next_task_name,
+        c.audit_user_id,
+        c.audit_time,
+        c.create_time
+        FROM
+        flow_audit_detail c
+        ORDER BY c.create_time DESC
+        LIMIT 10000
+        ) d GROUP BY d.instance_id
+        ) b ON a.instance_id = b.instance_id
+        <where>
+            a.flow_key = #{search.flowKey}
+            <if test="search != null and search.createUserId != null">
+                and a.create_user = #{search.createUserId}
+            </if>
+            <if test="search != null and search.searchInput != null and search.searchInput != ''">
+                and
+                (
+                a.remark like concat('%', #{search.searchInput}, '%')
+                or
+                d.name_en like concat('%', #{search.searchInput}, '%')
+                )
+            </if>
+            <if test="search != null and search.createTimeBegin != null">
+                and a.create_time <![CDATA[>=]]> #{search.createTimeBegin}
+            </if>
+            <if test="search != null and search.createTimeEnd != null">
+                and a.create_time <![CDATA[<=]]>#{search.createTimeEnd}
+            </if>
+            <if test="search != null and search.auditTimeBegin != null">
+                and b.audit_time <![CDATA[>=]]> #{search.auditTimeBegin}
+            </if>
+            <if test="search != null and search.auditTimeEnd != null">
+                and b.audit_time <![CDATA[<=]]>#{search.auditTimeEnd}
+            </if>
+        </where>
+        ORDER BY b.create_time DESC
+    </select>
+
+    <select id="queryMyAuditProcess" resultMap="FlowDataListVO"
+            parameterType="com.zei.flow.api.search.FlowDataSearch">
+        SELECT
+        a.instance_id,
+        a.flow_key,
+        a.flow_code,
+        a.service_id,
+        a.create_user,
+        a.flow_state,
+        a.create_time as createTime,
+        a.remark,
+        b.current_task_key,
+        b.current_task_name,
+        b.next_role,
+        b.next_task_key,
+        b.next_task_name,
+        b.audit_user_id,
+        b.audit_time
+        FROM
+        flow_audit a
+        LEFT JOIN
+        (
+        #子查询出最新的一条数据
+        SELECT * FROM
+        (
+        SELECT
+        c.instance_id,
+        c.current_task_key,
+        c.current_task_name,
+        c.current_role,
+        c.next_role,
+        c.next_task_key,
+        c.next_task_name,
+        c.audit_user_id,
+        c.audit_time,
+        c.create_time
+        FROM
+        flow_audit_detail c
+        ORDER BY c.create_time DESC
+        LIMIT 10000
+        ) d GROUP BY d.instance_id
+        ) b ON a.instance_id = b.instance_id
+        <where>
+            a.flow_key = #{search.flowKey}
+            <if test="search != null and search.auditUserId != null">
+                and b.audit_user_id = #{search.auditUserId}
+            </if>
+            <if test="search != null and search.searchInput != null and search.searchInput != ''">
+                and
+                (
+                a.remark like concat('%', #{search.searchInput}, '%')
+                or
+                d.name_en like concat('%', #{search.searchInput}, '%')
+                )
+            </if>
+            <if test="search != null and search.createTimeBegin != null">
+                and a.create_time <![CDATA[>=]]> #{search.createTimeBegin}
+            </if>
+            <if test="search != null and search.createTimeEnd != null">
+                and a.create_time <![CDATA[<=]]>#{search.createTimeEnd}
+            </if>
+            <if test="search != null and search.auditTimeBegin != null">
+                and b.audit_time <![CDATA[>=]]> #{search.auditTimeBegin}
+            </if>
+            <if test="search != null and search.auditTimeEnd != null">
+                and b.audit_time <![CDATA[<=]]>#{search.auditTimeEnd}
+            </if>
+        </where>
+        ORDER BY b.create_time DESC
+    </select>
+
+    <select id="queryMyWaitProcess" resultMap="FlowDataListVO"
+            parameterType="com.zei.flow.api.search.FlowDataSearch">
+        SELECT
+        a.instance_id,
+        a.flow_key,
+        a.flow_code,
+        a.service_id,
+        a.create_user,
+        a.flow_state,
+        a.create_time as createTime,
+        a.remark,
+        b.current_task_key,
+        b.current_task_name,
+        b.next_role,
+        b.next_task_key,
+        b.next_task_name,
+        b.audit_user_id,
+        b.audit_time
+        FROM
+        flow_audit a
+        LEFT JOIN
+        (
+        #子查询出最新的一条数据
+        SELECT * FROM
+        (
+        SELECT
+        c.instance_id,
+        c.current_task_key,
+        c.current_task_name,
+        c.current_role,
+        c.next_role,
+        c.next_task_key,
+        c.next_task_name,
+        c.audit_user_id,
+        c.audit_time,
+        c.create_time
+        FROM
+        flow_audit_detail c
+        ORDER BY c.create_time DESC
+        LIMIT 10000
+        ) d GROUP BY d.instance_id
+        ) b ON a.instance_id = b.instance_id
+        <where>
+            a.flow_key = #{search.flowKey}
+            and
+            a.flow_state = 0
+            <if test="search != null and search.role != null and search.role != ''">
+                and b.next_role REGEXP '(^|,)(' #{search.role} ')(,|$)'
+            </if>
+            <if test="search != null and search.searchInput != null and search.searchInput != ''">
+                and
+                (
+                a.remark like concat('%', #{search.searchInput}, '%')
+                or
+                d.name_en like concat('%', #{search.searchInput}, '%')
+                )
+            </if>
+            <if test="search != null and search.createTimeBegin != null">
+                and a.create_time <![CDATA[>=]]> #{search.createTimeBegin}
+            </if>
+            <if test="search != null and search.createTimeEnd != null">
+                and a.create_time <![CDATA[<=]]>#{search.createTimeEnd}
+            </if>
+            <if test="search != null and search.auditTimeBegin != null">
+                and b.audit_time <![CDATA[>=]]> #{search.auditTimeBegin}
+            </if>
+            <if test="search != null and search.auditTimeEnd != null">
+                and b.audit_time <![CDATA[<=]]>#{search.auditTimeEnd}
+            </if>
+        </where>
+        ORDER BY b.create_time DESC
+    </select>
+
+</mapper>
