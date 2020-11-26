@@ -4,7 +4,7 @@
 
 ## 流程配置
 ##### flow_model 存储流程类型数据
-##### flow_instantce 根据flow_key关联flow_model表，作为流程的节点配置表，do_url为节点处理业务的接口地址
+##### flow_instantce 根据flow_key关联flow_model表，作为流程的节点配置表，do_method为节点处理业务的方法，格式为xxxController/xxxMethod
 
 ## 流程工作数据
 ##### flow_audit 流程工作数据 每一次发起流程请求都会新增且仅有一条记录，service_id为业务表的主id（可根据自身业务定义类型），instance_id为流程的id标识
