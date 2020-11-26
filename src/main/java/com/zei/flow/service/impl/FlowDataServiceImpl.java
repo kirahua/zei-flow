@@ -8,6 +8,7 @@ import com.zei.flow.dao.FlowAuditMapper;
 import com.zei.flow.service.IFlowDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 
@@ -52,6 +53,13 @@ public class FlowDataServiceImpl implements IFlowDataService {
 
         //设置查询条件
         search.setAuditUserId(CurrentUser.userId);
+        //先查询是否有参与审批
+        List<String> doAuditInstanceIds = flowAuditMapper.queryDoAudit(search);
+        if (CollectionUtils.isEmpty(doAuditInstanceIds)) {
+            pageInfo.setRecords(null);
+            return pageInfo;
+        }
+        search.setInstanceIds(doAuditInstanceIds);
         List<FlowDataListVO> flowDataListVOS = flowAuditMapper.queryMyAuditProcess(pageInfo, search);
         //设置审批状态
         setFlowState(flowDataListVOS);

@@ -28,4 +28,6 @@ public interface FlowAuditMapper extends BaseMapper<FlowAudit> {
     List<FlowDataListVO> queryMyAuditProcess(PageInfo<FlowDataListVO> pageInfo, @Param("search") FlowDataSearch search);
 
     List<FlowDataListVO> queryMyWaitProcess(PageInfo<FlowDataListVO> pageInfo, @Param("search") FlowDataSearch search);
+
+    List<String> queryDoAudit(@Param("search") FlowDataSearch search);
 }

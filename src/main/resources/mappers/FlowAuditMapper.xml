@@ -119,8 +119,11 @@
         ) b ON a.instance_id = b.instance_id
         <where>
             a.flow_key = #{search.flowKey}
-            <if test="search != null and search.auditUserId != null">
-                and b.audit_user_id = #{search.auditUserId}
+            <if test="search != null and search.instanceIds.size() > 0">
+                and b.instance_id in
+                <foreach item="item"  index="index"  open="(" separator=","  close=")" collection="search.instanceIds">
+                    #{item}
+                </foreach>
             </if>
             <if test="search != null and search.searchInput != null and search.searchInput != ''">
                 and
@@ -219,4 +222,13 @@
         ORDER BY b.create_time DESC
     </select>
 
+    <select id="queryDoAudit" resultType="string"
+            parameterType="com.zei.flow.api.search.FlowDataSearch">
+        SELECT
+            DISTINCT a.instance_id
+        FROM flow_audit a
+                 LEFT JOIN flow_audit_detail b ON a.instance_id = b.instance_id
+        WHERE b.create_user = #{search.auditUserId}
+          AND a.flow_key = #{search.flowKey}
+    </select>
 </mapper>

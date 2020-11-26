@@ -52,10 +52,10 @@ public class FlowInstance implements Serializable {
 	@TableField("next_task_key")
 	private String nextTaskKey;
 	/**
-	 * 特殊执行url
+	 * 特殊执行方法
 	 */
-	@TableField("do_url")
-	private String doUrl;
+	@TableField("do_method")
+	private String doMethod;
 
 	@TableField(value = "create_user", fill = FieldFill.INSERT)
 	private Long createUser;

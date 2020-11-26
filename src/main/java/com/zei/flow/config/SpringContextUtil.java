@@ -1,4 +1,4 @@
-package com.jsyl.jms.config;
+package com.zei.flow.config;
 
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -25,7 +25,7 @@ public class SpringContextUtil implements ApplicationContextAware {
     }
 
 
-    public static Object getBean(String name) throws BeansException{
+    public static Object getBean(String name) throws BeansException {
 
         return applicationContext.getBean(name);
     }

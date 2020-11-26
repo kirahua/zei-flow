@@ -10,6 +10,7 @@ import com.zei.flow.api.dto.FlowServiceDTO;
 import com.zei.flow.api.dto.FlowSubmitDTO;
 import com.zei.flow.api.enums.AuditEnums;
 import com.zei.flow.api.vo.FlowServiceVO;
+import com.zei.flow.config.SpringContextUtil;
 import com.zei.flow.dao.*;
 import com.zei.flow.entity.*;
 import com.zei.flow.service.IFlowEvaluationService;
@@ -27,6 +28,8 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.*;
 
 /**
@@ -40,9 +43,6 @@ import java.util.*;
 @Slf4j
 @Service
 public class WorkFlowServiceImpl implements IWorkFlowService {
-
-    @Value("${service.url}")
-    public String SERVICE_URL;
 
     @Autowired
     RestTemplate restTemplate;
@@ -72,7 +72,7 @@ public class WorkFlowServiceImpl implements IWorkFlowService {
                 .eq("is_delete", 0));
 
         //执行业务方法
-        Result result = doTaskService(flowSubmitDTO, currentTask.getDoUrl(), request);
+        Result result = doTaskService(flowSubmitDTO, currentTask.getDoMethod(), request);
         if (result.getResp_code().equals(CodeEnum.ERROR.getCode())) {
             log.error(result.getResp_msg());
             return result;
@@ -96,6 +96,7 @@ public class WorkFlowServiceImpl implements IWorkFlowService {
             flowAudit = getFlowAudit(instanceId);
             if (flowServiceVO.getVariables() != null) {
                 flowAudit.setVariables(JSON.toJSONString(flowServiceVO.getVariables()));
+                flowAuditMapper.updateById(flowAudit);
             }
         }
 
@@ -244,27 +245,32 @@ public class WorkFlowServiceImpl implements IWorkFlowService {
      * 远程调用业务方法
      *
      * @param flowSubmitDTO
-     * @param doUrl
+     * @param doMethod
      * @param request
      * @return
      */
-    private Result doTaskService(FlowSubmitDTO flowSubmitDTO, String doUrl, HttpServletRequest request) {
+    private Result doTaskService(FlowSubmitDTO flowSubmitDTO, String doMethod, HttpServletRequest request) {
         Result result = Result.succeed(null);
 
-        if (!StringUtils.isEmpty(doUrl)) {
+        if (!StringUtils.isEmpty(doMethod)) {
             try {
                 FlowDoServiceDTO flowDoServiceDTO = new FlowDoServiceDTO();
                 BeanUtils.copyProperties(flowSubmitDTO, flowDoServiceDTO);
-                String url = SERVICE_URL + doUrl;
 
-                HttpHeaders httpHeaders = new HttpHeaders();
-                httpHeaders.setContentType(MediaType.APPLICATION_JSON_UTF8);
-                httpHeaders.set("Authorization", request.getHeader("Authorization"));
-                httpHeaders.set("Accept", "application/json");
+                String[] split = doMethod.split("/");
 
-                HttpEntity httpEntity = new HttpEntity(flowDoServiceDTO, httpHeaders);
-                result = restTemplate.postForObject(url, httpEntity, Result.class);
-            } catch (Exception e) {
+                String serviceName = split[0];
+                String methodName = split[1];
+                Class cls = SpringContextUtil.getBean(serviceName).getClass();
+                Method m = cls.getDeclaredMethod(methodName, String.class);
+                Object invoke = null;
+                invoke = m.invoke(SpringContextUtil.getBean(serviceName), JSON.toJSONString(flowDoServiceDTO));
+                result = (Result) invoke;
+
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+                return Result.failed(e.getTargetException().getMessage());
+            }catch (Exception e) {
                 e.printStackTrace();
                 log.error("流程url获取失败, e:{}", e.getMessage());
                 return Result.failed("系统异常:" + e.getMessage());

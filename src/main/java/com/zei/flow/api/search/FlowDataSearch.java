@@ -6,6 +6,7 @@ import lombok.Data;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * <p>
@@ -53,6 +54,8 @@ public class FlowDataSearch implements Serializable {
     @ApiModelProperty("审批时间截止（时分秒传23:59:59）")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date auditTimeEnd;
+
+    private List<String> instanceIds;
 
     private String orderByField;
 
